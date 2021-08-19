@@ -1,0 +1,51 @@
+#! /usr/bin/python3
+
+import os
+import sys
+import re
+
+IGNORE_LIST = [[], "127.0.0.1"]
+
+def grep_ip(all_lines, ignoreList):
+    uniq_ip = []
+    for line in all_lines:
+        line = re.findall(r'[0-9]+(?:\.[0-9]+){3}', line)
+        for ip in line:
+            if ip not in uniq_ip and ip not in ignoreList:
+                uniq_ip.append(ip)
+
+    return uniq_ip
+
+def add_ignore_list(filename):
+    try:
+        with open(filename, "r") as f:
+            newlines = f.readlines()
+            templines = grep_ip(newlines, "")
+
+            return templines
+
+    except FileNotFoundError:
+        print("ignore_list not found")
+
+if __name__ == "__main__":
+    arglength = len(sys.argv)
+
+    if (arglength == 1) or (arglength > 3):
+        print("\nArgument Error...\nUsage:\tuniqip INPUT-FILE IGNORE-FILE(optional)\n")
+
+    else:
+        filename = str(sys.argv[1])
+        try:
+            with open(filename, "r") as f:
+                lines = f.readlines()
+
+                if (arglength > 2):
+                    IGNORE_LIST = IGNORE_LIST + add_ignore_list(sys.argv[2])
+
+                lines_seen = grep_ip(lines, IGNORE_LIST) 
+
+                for item in lines_seen:
+                    print(item)
+
+        except FileNotFoundError:
+            print("File not found...")
